@@ -15,7 +15,6 @@ def ln(x: jax.Array, w: jax.Array, b: jax.Array, eps: float = 1e-5) -> jax.Array
     return invariance * (x - mean) + b
 
 
-# TODO: verify?
 # NOTE: I use flattened arrays!
 @partial(jax.jit, static_argnames=("gn", "eps"))
 def gn(
@@ -24,8 +23,6 @@ def gn(
     group_shape = (-1, gn, x.shape[0] // gn)
     # Split array into groups
     x = x.reshape(group_shape)
-    # w = w.reshape(group_shape)
-    # b = b.reshape(group_shape)
     mean = jnp.mean(x, -1, keepdims=True)
     variance = jnp.var(x, -1, keepdims=True)
     x = (x - mean) * jax.lax.rsqrt(variance + eps)
@@ -54,8 +51,6 @@ def ffn(
     r = jax.nn.sigmoid(rw @ xr)
     k = jnp.square(jax.nn.relu(kw @ xk))
     out = (r * (vw @ k))
-    # print(out)
-    # __import__("sys").exit(0)
 
     return res + out, x
 
@@ -94,7 +89,6 @@ def attn(
     k = (kw @ xk).reshape((H, S, 1))
     v = (vw @ xv).reshape((H, 1, S))
 
-    # xx = jnp.zeros((H, S), dtype=)
     a = k @ v
     xx = r @ (time_first * a + state_h)
     state_h = a + time_decay * state_h
@@ -102,8 +96,6 @@ def attn(
     xx = xx.flatten()
 
     out = (ow @ gn(xx, gn_w, gn_b, H))
-    # print(out)
-    # __import__("sys").exit(0)
 
     return res + out, state_x, state_h
 
